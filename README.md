@@ -24,7 +24,7 @@ The fair price follows GBM: `dS = μSdt + σSdW`
 
 - Drift `μ = 0` (no directional bias)
 - Volatility `σ ~ U[0.95%, 1.15%]` per step (varies across simulations)
-- Time step `dt = 1/252` (daily)
+- Time step `dt = 1/252`
 
 ### Retail Flow
 
