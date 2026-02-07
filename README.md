@@ -4,6 +4,8 @@
 
 Design dynamic fee strategies for a constant-product AMM. Your goal: maximize **edge**.
 
+**Setup:** You need **Python 3.10+** and **Rust** (for the `pyrevm` dependency). If `pip install -e .` fails with `metadata-generation-failed` on pyrevm, install Rust from https://rustup.rs then retry. See [SETUP.md](SETUP.md) for full steps.
+
 ## Submission
 
 Upload a `.sol` file containing a contract named `Strategy` that inherits from `AMMStrategyBase`.
