@@ -1,28 +1,25 @@
 # Baseline and Next Steps
 
-## Where we are
+## Baseline (set)
 
-- **Current baseline (this repo):** ~346 edge (99 sims) — single-tier adaptive: 28 bps base, 12 bps bump on large trade (>5%), 18-trade decay, asymmetric.
-- **Best result so far:** ~357 edge from the "first version" — we don't have that exact code saved; it may have differed in constants or in number of sims (e.g. 10 sims can show 357, 99 sims 346). We optimize from 346 and aim for 357+.
+- **Strategy:** Linear-in-inventory + one-step bump after large trade (`Linear_bump4_674`).
+  - Base fee: 26 + 4 × min(|ratio−100|%, 4) bps.
+  - If last trade ≥ 4% of reserves: add **674 bps** for the next step only (then back to linear).
+- **Score:** **372.03** (99 sims).
+- **File:** `contracts/src/AdaptiveStrategy.sol`.
 
-## Current AdaptiveStrategy.sol (baseline)
+This is the official baseline. Do not replace it without running 99 sims and comparing to **372.03**.
 
-- BASE_BPS = 28  
-- BUMP_BPS = 12  
-- Large threshold = 5% (WAD/20)  
-- DECAY_TRADES = 18, DECAY_STEP_BPS = 1  
-- Asymmetric bump (full on arb side, half on other)  
-- 4 slots only  
+## Next steps (one change at a time)
 
-## How to optimize from 346 (one change at a time, 99 sims each)
+- Try large-trade threshold 6% with same 674 bps bump.
+- Try linear slope/base tweaks on top of bump (e.g. 27 base, slope 4).
 
-1. **Base fee** — Try 26, 27, 29 (keep rest fixed). Pick best.
-2. **Bump** — Try 10, 14 (keep base and rest fixed). Pick best.
-3. **Threshold** — Try 4% (WAD/25), 6% (WAD/17). Pick best.
-4. **Decay length** — Try 14, 22. Pick best.
-5. **Symmetric bump** — Same bump on bid and ask (no half bump). Compare vs asymmetric.
-6. **One structural add** (only after tuning above):
-   - **Idle reset:** if no trade for 50+ steps, reset to base (needs 1 slot for last timestamp).
-   - **Two-tier:** 2% → +5 bps / 6 trades decay, 6% → +12 bps / 14 trades decay.
+**Tried (reverted or worse):**
+- Asymmetric rebalancing: **358.15**. Band tuning: **355.18**. Fee levels 25/29/44: **358.57**. Idle reset: **336.63**. Wider band 97–103: **352.75**. Four-band 24 bps: **358.10**. Linear base 25: **359.03**. Linear slope 3: **359.05**.
+- **Large-trade threshold 3%** with 674 bps bump: **344.31** (bump too often).
+- **Bump 800 bps** (5% threshold): **369.87** (worse than 674).
 
-Always run `amm-match run contracts/src/AdaptiveStrategy.sol --simulations 99` and compare average edge before/after each change.
+**Winning change:** Added **one-step bump after large trade** (≥4% of reserves → +674 bps next step) on top of linear-inventory → **372.03** (was 361.40). Research: “dynamical directional fees” and “widen during toxic flow” (arXiv 2406.12417, LVR/fee docs).
+
+Always: `amm-match run contracts/src/AdaptiveStrategy.sol --simulations 99`
